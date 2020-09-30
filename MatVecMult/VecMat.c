@@ -28,25 +28,22 @@ int** get_matrix(int row, int col)
 	return mat;
 }
 
-void disp_vec(int a[100],int b[100],int n)	//for displaying generated vectors
+void disp_vec(int *a,int *b, int n)	//for displaying generated vectors
 {
 	printf("\n Elements of vector A:\n");
 	for(int i=0;i<n;i++)
 	{
-		a[i]=rand()%10;
 		printf("\t %d",a[i]);
 	}
 	printf("\n Elements of vector B:\n");
 	for(int i=0;i<n;i++)
 	{
-		b[i]=rand()%10;
 		printf("\t %d",b[i]);
 	}
 }//end
 
-int* add_vec(int *a,int *b)		// for displaying addn of generated vectors
+int* add_vec(int *a,int *b, int n)		// for displaying addn of generated vectors
 {
-	int n = sizeof(a)/sizeof(a[0]);
 	int *c = (int*)malloc(n * sizeof(int));
 	printf("\n Addition of vector elements:\n");
 	#pragma omp parallel for
@@ -54,11 +51,12 @@ int* add_vec(int *a,int *b)		// for displaying addn of generated vectors
 		{
 			c[i]=a[i]+b[i];
 		}
-
+	for(int i=0; i<n; i++)
+		printf("\t %d", c[i]);
 	return c;
 }//end
 
-void dispmat(int a[100][100],int b[100][100],int r1,int c1,int r2,int c2)	//displaying matrix1 and matrix2
+void dispmat(int **a,int **b,int r1,int c1,int r2,int c2)	//displaying matrix1 and matrix2
 {
 	printf("\n Matrix A:\n");
 	for(int i=0;i<r1;i++)
@@ -145,6 +143,7 @@ int main()
 			case 1: //vector-vector addn
 				label:printf("\n Enter no. of elements:");
 				      scanf("%d",&no_of_ele);
+							printf("%d\n", no_of_ele);
 				if(no_of_ele>100)
 				{
 					printf("\n Vector Size exceed");
@@ -155,10 +154,8 @@ int main()
 				{
 					vec1 = get_vector(no_of_ele);
 					vec2 = get_vector(no_of_ele);
-					disp_vec(vec1,vec2);
-					resvec = add_vec(vec1,vec2);
-					for(int i=0;i<n;i++)
-						printf("\t %d",c[i]);
+					disp_vec(vec1,vec2, no_of_ele);
+					resvec = add_vec(vec1,vec2, no_of_ele);
 				}
 			break;
 
@@ -179,7 +176,7 @@ int main()
 				else
 				{
 					mat1 = get_matrix(row1, col1);
-					mat2 = get_matirx(row2, col2);
+					mat2 = get_matrix(row2, col2);
 					resmat = (int**)malloc(row1 * sizeof(int*));
 					for(int i = 0; i<row1; i++)
 						resmat[i] = (int*)malloc(col2 * sizeof(int));
@@ -212,7 +209,7 @@ int main()
 				else
 				{
 					vec1 = get_vector(no_of_ele);
-					mat1 = get_matirx(row, col);
+					mat1 = get_matrix(row, col);
 					dispmatvec(mat1,vec1,no_of_ele,row,col);
 					printf("\n Multiplication:\n");
 					matvecmul(mat1,vec1,resvec,row,col,no_of_ele);
