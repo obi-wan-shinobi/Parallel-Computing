@@ -3,6 +3,31 @@
 #include<stdlib.h>
 #include<time.h>
 
+int* get_vector(int n)
+{
+	int *a;
+	a = (int*)malloc(n * sizeof(int));
+
+	for(int i=0; i<n; i++)
+		a[i] = rand()%10;
+
+	return a;
+}
+
+int** get_matrix(int row, int col)
+{
+	int **mat = (int**)malloc(row * sizeof(int*));
+
+	for(int i = 0; i<row; i++)
+		mat[i] = (int*)malloc(col * sizeof(int));
+
+	for(int i = 0; i < row; i++)
+		for(int j = 0; j < col; j++)
+			mat[i][j] = rand() % 10;
+
+	return mat;
+}
+
 void disp_vec(int a[100],int b[100],int n)	//for displaying generated vectors
 {
 	printf("\n Elements of vector A:\n");
@@ -19,8 +44,10 @@ void disp_vec(int a[100],int b[100],int n)	//for displaying generated vectors
 	}
 }//end
 
-void add_vec(int a[100],int b[100],int c[100],int n)		// for displaying addn of generated vectors
+int* add_vec(int *a,int *b)		// for displaying addn of generated vectors
 {
+	int n = sizeof(a)/sizeof(a[0]);
+	int *c = (int*)malloc(n * sizeof(int));
 	printf("\n Addition of vector elements:\n");
 	#pragma omp parallel for
 	for(int i=0;i<n;i++)
@@ -28,11 +55,7 @@ void add_vec(int a[100],int b[100],int c[100],int n)		// for displaying addn of 
 			c[i]=a[i]+b[i];
 		}
 
-	for(int i=0;i<n;i++)
-	{
-
-		printf("\t %d",c[i]);
-	}
+	return c;
 }//end
 
 void dispmat(int a[100][100],int b[100][100],int r1,int c1,int r2,int c2)	//displaying matrix1 and matrix2
@@ -41,25 +64,19 @@ void dispmat(int a[100][100],int b[100][100],int r1,int c1,int r2,int c2)	//disp
 	for(int i=0;i<r1;i++)
 	{
 		for(int j=0;j<c1;j++)
-		{
-			a[i][j]=rand()%10;
 			printf("\t %d",a[i][j]);
-		}
 		printf("\n");
 	}
 	printf("\n Matrix B:\n");
 	for(int i=0;i<r2;i++)
 	{
 		for(int j=0;j<c2;j++)
-		{
-			b[i][j]=rand()%10;
 			printf("\t %d",b[i][j]);
-		}
 		printf("\n");
 	}
 }//end
 
-void matrixmul(int a[100][100],int b[100][100],int c[100][100],int r1,int c1,int c2)	//matrix multiplication
+void matrixmul(int **a,int **b,int **c,int r1,int c1,int c2)	//matrix multiplication
 {
 
 	#pragma omp parallel for
@@ -77,13 +94,9 @@ void matrixmul(int a[100][100],int b[100][100],int c[100][100],int r1,int c1,int
 	}
 }//end
 
-void dispmatvec(int a[100][100],int b[100],int n,int r,int c)	//displaying original matrix and vector
+void dispmatvec(int **a,int *b,int n,int r,int c)	//displaying original matrix and vector
 {
 	printf("\n Vector:\n");
-	for(int i=0;i<n;i++)
-	{
-		b[i]=rand()%10;
-	}
 	for(int i=0;i<n;i++)
 	{
 		printf("\t %d",b[i]);
@@ -94,20 +107,13 @@ void dispmatvec(int a[100][100],int b[100],int n,int r,int c)	//displaying origi
 	{
 		for(int j=0;j<c;j++)
 		{
-			a[i][j]=rand()%10;
-		}
-	}
-	for(int i=0;i<r;i++)
-	{
-		for(int j=0;j<c;j++)
-		{
 			printf("\t %d",a[i][j]);
 		}
 		printf("\n");
 	}
 }//end
 
-void matvecmul(int a[100][100],int b[100],int vec[100],int r,int c,int n)	//matrix-vector multiplication
+void matvecmul(int **a,int *b,int *vec,int r,int c,int n)	//matrix-vector multiplication
 {
 	#pragma omp parallel for
 	for(int i=0;i<r;i++)
@@ -123,8 +129,10 @@ void matvecmul(int a[100][100],int b[100],int vec[100],int r,int c,int n)	//matr
 
 int main()
 {
-	int no_of_ele,vec1[100],vec2[100],resvec[100],ch,mat,mat1[100][100],mat2[100][100],resmat[100][100],row1,col1,row2,col2,row,col;
+	int no_of_ele,*vec1,*vec2,*resvec,ch,mat,**mat1,**mat2,**resmat,row1,col1,row2,col2,row,col;
 	clock_t start=clock();
+
+
 	do
 	{
 		printf("\n---------------OPTIONS----------------");
@@ -145,8 +153,12 @@ int main()
 				}
 				else
 				{
-					disp_vec(vec1,vec2,no_of_ele);
-					add_vec(vec1,vec2,resvec,no_of_ele);
+					vec1 = get_vector(no_of_ele);
+					vec2 = get_vector(no_of_ele);
+					disp_vec(vec1,vec2);
+					resvec = add_vec(vec1,vec2);
+					for(int i=0;i<n;i++)
+						printf("\t %d",c[i]);
 				}
 			break;
 
@@ -166,6 +178,11 @@ int main()
 				}
 				else
 				{
+					mat1 = get_matrix(row1, col1);
+					mat2 = get_matirx(row2, col2);
+					resmat = (int**)malloc(row1 * sizeof(int*));
+					for(int i = 0; i<row1; i++)
+						resmat[i] = (int*)malloc(col2 * sizeof(int));
 					dispmat(mat1,mat2,row1,col1,row2,col2);
 					printf("\n Resultant matrix:\n");
 					matrixmul(mat1,mat2,resmat,row1,col1,col2);
@@ -194,6 +211,8 @@ int main()
 				}
 				else
 				{
+					vec1 = get_vector(no_of_ele);
+					mat1 = get_matirx(row, col);
 					dispmatvec(mat1,vec1,no_of_ele,row,col);
 					printf("\n Multiplication:\n");
 					matvecmul(mat1,vec1,resvec,row,col,no_of_ele);
@@ -214,4 +233,4 @@ int main()
 	double elapsed = (double)(stop - start) * 1000.0 / CLOCKS_PER_SEC;
 	printf("Time elapsed in ms: %f", elapsed);
 return 0;
-}						
+}
